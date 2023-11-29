@@ -4,7 +4,7 @@ import { Router as RemixRouter } from '@remix-run/router/dist/router'
 
 import type { HeaderElement } from './types/header'
 
-import GeneralLayout from './layout/GeneralLayout'
+import GeneralLayout from './component/layout/GeneralLayout'
 import Join from './pages/Join'
 import Login from './pages/Login'
 import UserInfo from './pages/UserInfo'
