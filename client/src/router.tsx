@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { createBrowserRouter, redirect } from 'react-router-dom'
+import { Navigate, createBrowserRouter, redirect } from 'react-router-dom'
 import { Router as RemixRouter } from '@remix-run/router/dist/router'
 
 import type { HeaderElement } from './types/header'
@@ -91,7 +91,7 @@ const routerData: RouterElement[] = [
     path: '/map/:type',
     label: 'Map',
     element: <Map />,
-    checkAuth: true,
+    checkAuth: false,
   },
   { id: 6, path: '/course-list', label: 'CourseList', element: <CourseList />, checkAuth: true },
   {
@@ -108,7 +108,13 @@ const routerData: RouterElement[] = [
     element: <NotFound />,
     checkAuth: false,
   },
-  { id: 9, path: '/', label: 'DefaultPage', element: <Review />, checkAuth: false },
+  {
+    id: 9,
+    path: '/',
+    label: 'DefaultPage',
+    element: <Navigate to='/review' replace={true} />,
+    checkAuth: false,
+  },
 ]
 
 // 어드민 전용 페이지이거나 auth가 필요한 페이지는 WithAuthLayout으로 감싸기
@@ -142,7 +148,7 @@ export const routers: RemixRouter = createBrowserRouter(
 // routerData에서 path와 element 속성 배열을 생성하여 createBrowserRouter로 Router 객체 생성
 // 어드민 전용 페이지는 checkAdmin = true를 전달, 아니면 false를 전달
 
-const excludeHeaderList = ['Join', 'Login', 'UserInfo', 'NotFound']
+const excludeHeaderList = ['Join', 'Login', 'UserInfo', 'NotFound', 'DefaultPage']
 
 // 인증 정보가 필요한 HeaderContent 필터링하기
 export const withoutAuthHeaderContent: HeaderElement[] = routerData.reduce((prev, router) => {

@@ -1,6 +1,6 @@
 import React from 'react'
 // import Navbar from './Navbar'
-import HeadNavbar from '../common/HeadNavbar'
+import HeadNavbar from '../HeaderNavbar'
 
 import styles from './GeneralLayout.module.scss'
 

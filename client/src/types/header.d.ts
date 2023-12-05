@@ -4,3 +4,5 @@ export interface HeaderElement {
   path: string
   isAdminOnly?: boolean
 }
+
+type windowSizeType = 'desktop' | 'tablet' | 'mobile'

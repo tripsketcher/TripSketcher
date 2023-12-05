@@ -1,0 +1,25 @@
+@use './src/styles/base/reset';
+@use './src/styles/mixins/visual';
+@use '/src/styles/constants/colors';
+
+.headerModal {
+  :global {
+    .modalContent {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 200px;
+      padding: 40px 20px 0;
+      background-color: colors.$WHITE;
+      z-index: 10;
+    }
+
+    .closeButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      height: 20px;
+    }
+  }
+}
