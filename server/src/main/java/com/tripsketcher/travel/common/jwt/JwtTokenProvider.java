@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class JwtTokenProvider {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
     private final String tokenType = "Bearer";
     private final String prefix = "Bearer ";
     private String secretKey;
