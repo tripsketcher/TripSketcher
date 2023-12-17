@@ -1,11 +1,13 @@
 package com.tripsketcher.travel.common.jwt;
 
 import com.tripsketcher.travel.common.exception.CustomException;
+import com.tripsketcher.travel.common.exception.ErrorType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -23,27 +25,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        String token = resolveToken(request);
+
         try {
-            if (token != null && tokenProvider.validateToken(token)) {
-                Authentication auth = tokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            // resolve refresh token
+            String refreshToken = tokenProvider.resolveRefreshToken(request);
+
+            // checking access token
+            String accessToken = tokenProvider.resolveAccessToken(request);
+            String userId;
+            if(accessToken == null){
+                userId = tokenProvider.recreateAccessToken(refreshToken, response);
+            }else{
+                userId = tokenProvider.validateAccessToken(accessToken, refreshToken, response);
             }
+
+            // getting authentication
+            Authentication auth = tokenProvider.getAuthentication(userId);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
         } catch (CustomException ex) {
             SecurityContextHolder.clearContext();
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
             return;
         }
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request){
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }

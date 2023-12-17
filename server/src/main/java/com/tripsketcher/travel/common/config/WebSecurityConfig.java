@@ -1,6 +1,7 @@
 package com.tripsketcher.travel.common.config;
 
 import com.tripsketcher.travel.common.jwt.JwtAuthenticationFilter;
+import com.tripsketcher.travel.common.security.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                );
 
         // cors
         http.cors(cors->cors.configurationSource(request -> {
