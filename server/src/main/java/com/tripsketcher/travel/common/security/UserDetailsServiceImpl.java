@@ -20,7 +20,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        Users user = userRepository.findByIdAndDeletedDateIsNull(Long.parseLong(userId)).orElseThrow(() -> new UsernameNotFoundException(ErrorType.NOT_FOUND_USER.getMsg()));
-        return new UserDetailsImpl(user, user.getId());
+        return userRepository.findByIdAndDeletedDateIsNull(Long.parseLong(userId)).orElseThrow(() -> new UsernameNotFoundException(ErrorType.NOT_FOUND_USER.getMsg()));
     }
 }

@@ -1,10 +1,8 @@
 package com.tripsketcher.travel.common.jwt;
 
 import com.tripsketcher.travel.common.exception.CustomException;
-import com.tripsketcher.travel.common.exception.ErrorType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
