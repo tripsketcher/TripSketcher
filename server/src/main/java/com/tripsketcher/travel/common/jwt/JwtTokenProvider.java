@@ -75,6 +75,17 @@ public class JwtTokenProvider {
     }
 
     /**
+     * Sets an expired token in the response header to effectively delete the access token.
+     * This method is used to signal the client that the current access token should no longer be used.
+     *
+     * @param response The HttpServletResponse where the expired token is to be set.
+     */
+    public void deleteAccessToken(HttpServletResponse response){
+        String expiredToken = "expired";
+        response.setHeader(AUTHORIZATION_HEADER, prefix + expiredToken);
+    }
+
+    /**
      * Creates a refresh token and sets it as a HttpOnly cookie in the response.
      * Saves the refresh token in Redis with the user's userId
      * as the key and the refresh token as the corresponding value.
