@@ -93,13 +93,11 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Deletes the refresh token from the redis repository and removes the cookie from the response.
+     * Deletes the refresh token from the cookie to the response.
      *
-     * @param userId    The user identifier whose token needs to be deleted.
      * @param response  The HttpServletResponse to remove the cookie from.
      */
-    public void deleteRefreshToken(String userId, HttpServletResponse response){
-        refreshTokenRepository.deleteRefreshToken(userId);
+    public void deleteRefreshTokenCookie(HttpServletResponse response){
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setMaxAge(0);
         refreshTokenCookie.setHttpOnly(true);
@@ -239,5 +237,16 @@ public class JwtTokenProvider {
             }
         }
         throw new CustomException(ErrorType.NO_TOKEN);
+    }
+
+    /**
+     * Deletes the refresh token from the redis repository and removes the cookie from the response.
+     *
+     * @param userId    The user identifier whose token needs to be deleted.
+     * @param response  The HttpServletResponse to remove the cookie from.
+     */
+    public void logoutToken(String userId, HttpServletResponse response){
+        refreshTokenRepository.deleteRefreshToken(userId);
+        deleteRefreshTokenCookie(response);
     }
 }

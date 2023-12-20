@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,6 +29,9 @@ public class WebSecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public Random random() { return new Random(); }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

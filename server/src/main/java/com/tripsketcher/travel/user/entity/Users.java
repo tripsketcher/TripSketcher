@@ -23,11 +23,21 @@ public class Users extends BaseTime implements UserDetails {
     @Column(nullable = false, unique = true, length = 50)
     private String userEmail;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 64)
     private String userPassword;
 
     @Column(nullable = false, unique = true, length = 50)
     private String userNickname;
+
+    private String userProfileImage;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private int failedLoginAttempts = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean isNonLocked = true;
 
     @Builder.Default
     @Column(nullable = false)
@@ -56,7 +66,7 @@ public class Users extends BaseTime implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return this.isNonLocked;
     }
 
     @Override

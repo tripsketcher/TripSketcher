@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (CustomException ex) {
             SecurityContextHolder.clearContext();
+            tokenProvider.deleteRefreshTokenCookie(response);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
             return;
         }
