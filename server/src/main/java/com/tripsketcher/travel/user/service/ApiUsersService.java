@@ -2,11 +2,10 @@ package com.tripsketcher.travel.user.service;
 
 import com.tripsketcher.travel.common.exception.CustomException;
 import com.tripsketcher.travel.common.exception.ErrorType;
+import com.tripsketcher.travel.common.handler.TransactionHandler;
 import com.tripsketcher.travel.common.jwt.JwtTokenProvider;
-import com.tripsketcher.travel.user.dto.request.EmailAuthenticationCodeRequestDto;
-import com.tripsketcher.travel.user.dto.request.EmailAuthenticationRequestDto;
-import com.tripsketcher.travel.user.dto.request.JoinRequestDto;
-import com.tripsketcher.travel.user.dto.request.LoginRequestDto;
+import com.tripsketcher.travel.common.redis.RedisLockRepository;
+import com.tripsketcher.travel.user.dto.request.*;
 import com.tripsketcher.travel.user.dto.response.PublicUserInfo;
 import com.tripsketcher.travel.user.entity.Nickname;
 import com.tripsketcher.travel.user.entity.Users;
@@ -31,18 +30,20 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class ApiUsersService {
 
+    private final Random random;
     private final PasswordEncoder passwordEncoder;
     private final UsersRepository usersRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
     private final StringRedisTemplate redisTemplate;
     private final NicknameRepository nicknameRepository;
-    private final Random random;
+    private final RedisLockRepository redisLockRepository;
+    private final TransactionHandler transactionHandler;
 
     private final int MAX_EMAIL_REQUESTS = 3;
     private final int TIME_LIMIT_MINUTES = 3;
     private final int VERIFICATION_CODE_SIZE = 10;
-    private final int NEW_PASSWORD_SIZE = 16;
+    private final int NEW_PASSWORD_SIZE = 8;
 
     // service method
 
@@ -83,24 +84,30 @@ public class ApiUsersService {
         redisTemplate.opsForValue().set(authorizedEmail, requestDto.getEmail(), 1, TimeUnit.HOURS);
     }
 
-    @Transactional
     public void join(JoinRequestDto requestDto){
-        String email = requestDto.getEmail();
-        String password = requestDto.getPassword();
+        String lockKey = "user_join_lock";
+        redisLockRepository.runOnLock(lockKey, () -> {
+            transactionHandler.runOnWriteTransaction(() -> {
+                String email = requestDto.getEmail();
+                String password = requestDto.getPassword();
 
-        duplicateEmail(email);
+                duplicateEmail(email);
 
-        if(Boolean.FALSE.equals(redisTemplate.hasKey("authorized_email:" + email))){
-            throw new CustomException(ErrorType.VERIFICATION_CODE_NOT_FOUND);
-        }
+                if (Boolean.FALSE.equals(redisTemplate.hasKey("authorized_email:" + email))) {
+                    throw new CustomException(ErrorType.VERIFICATION_CODE_NOT_FOUND);
+                }
 
-        Users user = Users.builder()
-                .userEmail(email)
-                .userPassword(passwordEncoder.encode(password))
-                .userNickname(getRandomNickname())
-                .build();
+                Users user = Users.builder()
+                        .userEmail(email)
+                        .userPassword(passwordEncoder.encode(password))
+                        .userNickname(getRandomNickname())
+                        .build();
 
-        usersRepository.save(user);
+                usersRepository.save(user);
+                return null;
+            });
+            return null;
+        });
     }
 
     public PublicUserInfo publicUserInfo(String userNickname){
@@ -114,6 +121,7 @@ public class ApiUsersService {
                 .build();
     }
 
+    @Transactional
     public void login(LoginRequestDto requestDto, HttpServletResponse response){
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
@@ -141,6 +149,22 @@ public class ApiUsersService {
 
         jwtTokenProvider.createAccessToken(user.getUsername(), response);
         jwtTokenProvider.createRefreshToken(user.getUsername(), response);
+    }
+
+    public void passwordReset(PasswordResetRequestDto requestDto){
+        String email = requestDto.getEmail();
+        String sentEmailKey = "reset_password_email:"+email;
+
+        Users user = usersRepository.findByUserEmailAndDeletedDateIsNull(email)
+                .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_USER));
+
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(sentEmailKey))){
+            throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
+        }
+
+        redisTemplate.opsForValue().set(sentEmailKey, email, 3, TimeUnit.MINUTES);
+        user.setUserPassword(sendNewPassword(email));
+        usersRepository.save(user);
     }
 
     // service internal method
@@ -218,7 +242,7 @@ public class ApiUsersService {
         String finalNickname;
         do{
             StringBuilder numbers = new StringBuilder();
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 6; i++) {
                 numbers.append(random.nextInt(10));
             }
             Nickname randomNickname = allNicknames.get(random.nextInt(allNicknames.size()));

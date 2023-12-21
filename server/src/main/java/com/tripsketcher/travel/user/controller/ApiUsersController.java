@@ -3,10 +3,7 @@ package com.tripsketcher.travel.user.controller;
 import com.tripsketcher.travel.common.response.ApiResponseDto;
 import com.tripsketcher.travel.common.response.MsgType;
 import com.tripsketcher.travel.common.response.ResponseUtils;
-import com.tripsketcher.travel.user.dto.request.EmailAuthenticationCodeRequestDto;
-import com.tripsketcher.travel.user.dto.request.EmailAuthenticationRequestDto;
-import com.tripsketcher.travel.user.dto.request.JoinRequestDto;
-import com.tripsketcher.travel.user.dto.request.LoginRequestDto;
+import com.tripsketcher.travel.user.dto.request.*;
 import com.tripsketcher.travel.user.dto.response.PublicUserInfo;
 import com.tripsketcher.travel.user.service.ApiUsersService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,8 +18,8 @@ public class ApiUsersController {
 
     private final ApiUsersService apiUsersService;
 
-    @GetMapping("/email/{user-email}")
-    public ApiResponseDto<Void> duplicateEmail(@PathVariable("user-email") String email){
+    @GetMapping("/email/{user_email}")
+    public ApiResponseDto<Void> duplicateEmail(@PathVariable("user_email") String email){
         apiUsersService.duplicateEmail(email);
         return ResponseUtils.ok(MsgType.NO_DUPLICATE_EMAIL);
     }
@@ -45,8 +42,8 @@ public class ApiUsersController {
         return ResponseUtils.ok(MsgType.JOIN_SUCCESSFULLY);
     }
 
-    @GetMapping("/info/{user-nickname}")
-    public ApiResponseDto<PublicUserInfo> publicUserInfo(@PathVariable("user-nickname") String userNickname){
+    @GetMapping("/info/{user_nickname}")
+    public ApiResponseDto<PublicUserInfo> publicUserInfo(@PathVariable("user_nickname") String userNickname){
         return ResponseUtils.ok(apiUsersService.publicUserInfo(userNickname), MsgType.USER_INFO_SUCCESSFULLY);
     }
 
@@ -54,5 +51,11 @@ public class ApiUsersController {
     public ApiResponseDto<Void> login(@Valid @RequestBody LoginRequestDto requestDto, HttpServletResponse response){
         apiUsersService.login(requestDto, response);
         return ResponseUtils.ok(MsgType.LOGIN_SUCCESSFULLY);
+    }
+
+    @PatchMapping("/password-reset")
+    public ApiResponseDto<Void> passwordReset(@Valid @RequestBody PasswordResetRequestDto requestDto){
+        apiUsersService.passwordReset(requestDto);
+        return ResponseUtils.ok(MsgType.RESET_PASSWORD_EMAIL_SENT);
     }
 }
