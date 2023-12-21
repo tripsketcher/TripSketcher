@@ -55,6 +55,7 @@ public class ApiUsersService {
 
     public void sendVerificationEmail(EmailAuthenticationRequestDto requestDto){
         String email = requestDto.getEmail();
+        duplicateEmail(requestDto.getEmail());
         checkEmailRequestLimit(email);
 
         String verificationCode = getAuthenticationCode(email);
@@ -71,6 +72,7 @@ public class ApiUsersService {
         String codeKey = "email_authentication_code:" + requestDto.getEmail();
         String code = requestDto.getCode();
 
+        duplicateEmail(requestDto.getEmail());
         String codeVal = redisTemplate.opsForValue().get(codeKey);
         if(codeVal == null){
             throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
