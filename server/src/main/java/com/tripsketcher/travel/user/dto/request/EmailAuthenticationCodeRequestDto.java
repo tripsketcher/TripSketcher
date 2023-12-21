@@ -14,6 +14,6 @@ public class EmailAuthenticationCodeRequestDto {
     @Pattern(regexp = "^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$", message = "notEmailFormat")
     private String email;
 
-    @Size(min = 10, max = 10, message = "10자가 아닙니다.")
+    @Size(min = 10, max = 10, message = "사이즈가 맞지 않습니다.")
     private String code;
 }
