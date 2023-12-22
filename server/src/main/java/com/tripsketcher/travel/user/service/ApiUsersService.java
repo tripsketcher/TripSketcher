@@ -13,7 +13,6 @@ import com.tripsketcher.travel.user.repository.NicknameRepository;
 import com.tripsketcher.travel.user.repository.UsersRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -44,6 +43,7 @@ public class ApiUsersService {
     private final int TIME_LIMIT_MINUTES = 3;
     private final int VERIFICATION_CODE_SIZE = 10;
     private final int NEW_PASSWORD_SIZE = 8;
+    private final String EMAIL_LIMIT_TIME_KEY="email_authentication_code:";
 
     // service method
 
@@ -55,29 +55,34 @@ public class ApiUsersService {
 
     public void sendVerificationEmail(EmailAuthenticationRequestDto requestDto){
         String email = requestDto.getEmail();
+        String key = "email_count";
+
         duplicateEmail(requestDto.getEmail());
-        checkEmailRequestLimit(email);
+        int count = checkEmailRequestLimit(key, email);
 
         String verificationCode = getAuthenticationCode(email);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Trip Sketcher Verification Code");
-        message.setText("Your verification code is: " + verificationCode);
+        message.setText("This is your " + count + " request.\nYour verification code is: " + verificationCode);
         mailSender.send(message);
 
-        updateRequestCount(email);
+        updateRequestCount(key, email);
     }
 
     public void verificationEmail(EmailAuthenticationCodeRequestDto requestDto){
         String codeKey = "email_authentication_code:" + requestDto.getEmail();
+        String countKey = "email_authentication_code_count:";
         String code = requestDto.getCode();
 
+        checkEmailRequestLimit(countKey, requestDto.getEmail());
         duplicateEmail(requestDto.getEmail());
         String codeVal = redisTemplate.opsForValue().get(codeKey);
         if(codeVal == null){
             throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
         }
         if(!codeVal.equals(code)){
+            updateRequestCount(countKey, requestDto.getEmail());
             throw new CustomException(ErrorType.VERIFICATION_CODE_MISMATCH);
         }
 
@@ -123,7 +128,6 @@ public class ApiUsersService {
                 .build();
     }
 
-    @Transactional
     public void login(LoginRequestDto requestDto, HttpServletResponse response){
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
@@ -135,8 +139,9 @@ public class ApiUsersService {
             if(user.getFailedLoginAttempts() < 5){
                 user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
             }
-            if(user.getFailedLoginAttempts() >= 5 && user.isAccountNonLocked()){
+            if(user.getFailedLoginAttempts() >= 5){
                 user.setNonLocked(false);
+                user.setFailedLoginAttempts(0);
                 user.setUserPassword(sendNewPassword(email));
                 usersRepository.save(user);
                 throw new CustomException(ErrorType.ACCOUNT_LOCKED);
@@ -171,21 +176,23 @@ public class ApiUsersService {
 
     // service internal method
 
-    private void checkEmailRequestLimit(String email){
-        String countKey = "email_count:" + email;
+    private int checkEmailRequestLimit(String key, String email){
+        String countKey = key + email;
         String countStr = redisTemplate.opsForValue().get(countKey);
         int count = countStr != null ? Integer.parseInt(countStr) : 0;
 
         if(count >= MAX_EMAIL_REQUESTS){
             throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
         }
+
+        return count;
     }
 
-    private void updateRequestCount(String email) {
-        String countKey = "email_count:" + email;
+    private void updateRequestCount(String key, String email) {
+        String countKey = key + email;
         String countStr = redisTemplate.opsForValue().get(countKey);
         if(countStr == null){
-            redisTemplate.opsForValue().set(countKey, "0", TIME_LIMIT_MINUTES, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(countKey, "1", getExpirationTime(email), TimeUnit.SECONDS);
         }else{
             redisTemplate.opsForValue().increment(countKey, 1);
         }
@@ -230,7 +237,7 @@ public class ApiUsersService {
         String codeVal = redisTemplate.opsForValue().get(codeKey);
         if(codeVal == null){
             codeVal = generateVerificationCode(VERIFICATION_CODE_SIZE);
-            redisTemplate.opsForValue().set(codeKey, codeVal, TIME_LIMIT_MINUTES, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(codeKey, codeVal, TIME_LIMIT_MINUTES, TimeUnit.SECONDS);
         }
         return codeVal;
     }
@@ -271,5 +278,9 @@ public class ApiUsersService {
         message.setText("Your new password is: " + newPassword);
         mailSender.send(message);
         return newPassword;
+    }
+
+    private Long getExpirationTime(String email){
+        return redisTemplate.getExpire(EMAIL_LIMIT_TIME_KEY + email, TimeUnit.SECONDS);
     }
 }
