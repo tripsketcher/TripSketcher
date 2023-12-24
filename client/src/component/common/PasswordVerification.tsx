@@ -32,6 +32,7 @@ const PasswordVerification = ({ type, setPassword, setSubmitPassState }: Passwor
 
     // 아이디는 6-12자의 영문 소문자와 숫자만 사용 가능
     const pwText = event.currentTarget.value
+    setPassword && setPassword(pwText)
 
     if (pwText.length === 0) {
       setPwMessage(null)
@@ -59,7 +60,6 @@ const PasswordVerification = ({ type, setPassword, setSubmitPassState }: Passwor
         pwLevel += 1
       }
       setPwLevel(pwLevel)
-      setPassword && setPassword(pwText)
       return
     }
     if (longPwReg.test(pwText)) {
@@ -77,7 +77,6 @@ const PasswordVerification = ({ type, setPassword, setSubmitPassState }: Passwor
       }
 
       setPwLevel(pwLevel)
-      setPassword && setPassword(pwText)
       return
     }
 
