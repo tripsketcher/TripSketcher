@@ -27,9 +27,10 @@ const Join = () => {
 
   // check submit is available individually
   // -> SubmitButton에서 어떻게 확인할건데..
-
+  const [password, setPassword] = useState('')
   const [isEmailSubmitValid, setIsEmailSubmitValid] = useState(false)
   const [isPwSubmitValid, setIsPwSubmitValid] = useState(false)
+  const [isPwConfirmSubmitValid, setIsPwConfirmSubmitValid] = useState(false)
 
   const pageExpirationTimeRef = useRef(60 * 60) // 3600초(1시간)
   // const { routeTo } = useRouter()
@@ -78,8 +79,8 @@ const Join = () => {
         <h1>회원가입</h1>
         <form onSubmit={handleSubmit} className={styles.joinForm}>
           <Email setSubmitPassState={setIsEmailSubmitValid} pageExpirationTimeRef={pageExpirationTimeRef} />
-          <Password type='pw' setSubmitPassState={setIsPwSubmitValid} />
-          {/* <PasswordConfirm /> */}
+          <Password type='pw' setPassword={setPassword} setSubmitPassState={setIsPwSubmitValid} />
+          <PasswordConfirm type='pwConfirm' firstPw={password} setSubmitPassState={setIsPwConfirmSubmitValid} />
           {/* <Nickname /> */}
           {/* <Phone /> */}
           <SubmitButton submitPassState={submitPassState} setSubmitPassState={setSubmitPassState} />
