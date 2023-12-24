@@ -28,6 +28,7 @@ const Join = () => {
   // check submit is available individually
   // -> SubmitButton에서 어떻게 확인할건데..
 
+  const [isEmailSubmitValid, setIsEmailSubmitValid] = useState(false)
   const [isPwSubmitValid, setIsPwSubmitValid] = useState(false)
 
   const pageExpirationTimeRef = useRef(60 * 60) // 3600초(1시간)
@@ -76,7 +77,7 @@ const Join = () => {
       <section className={styles.joinMain}>
         <h1>회원가입</h1>
         <form onSubmit={handleSubmit} className={styles.joinForm}>
-          <Email setSubmitPassState={setSubmitPassState} pageExpirationTimeRef={pageExpirationTimeRef} />
+          <Email setSubmitPassState={setIsEmailSubmitValid} pageExpirationTimeRef={pageExpirationTimeRef} />
           <Password type='pw' setSubmitPassState={setIsPwSubmitValid} />
           {/* <PasswordConfirm /> */}
           {/* <Nickname /> */}

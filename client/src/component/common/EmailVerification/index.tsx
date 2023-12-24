@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react'
 import _ from 'lodash'
 
 import { checkDuplicationApi, sendVerificationCodeApi } from 'service/api/auth'
-import { EmailMessageType, JoinValidationInfo } from 'types/auth'
+import { EmailMessageType, JoinValidationInfo, ValidateSubmitIsPassFunc } from 'types/auth'
 import { messageInfo } from 'utils/const/auth'
 import VerificationInput from './VerificationCode'
+import { useCheckSubmitValidation } from 'hooks/useCheckSubmitValidation'
 
 const INITIAL_TIME = 180
 
 interface EmailVerificationProps {
-  setSubmitPassState: React.Dispatch<React.SetStateAction<JoinValidationInfo>>
+  setSubmitPassState: React.Dispatch<React.SetStateAction<boolean>>
   pageExpirationTimeRef?: React.MutableRefObject<number>
 }
 
@@ -20,17 +21,10 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
   const [emailMessage, setEmailMessage] = useState<EmailMessageType | null>(null)
 
   // Form Submit을 위한 Email 유효성 검증 로직
-  useEffect(() => {
-    if (emailMessage === 'certifiedEmail') {
-      setSubmitPassState((pre) => {
-        return { ...pre, email: true }
-      })
-    } else {
-      setSubmitPassState((pre) => {
-        return { ...pre, email: false }
-      })
-    }
-  }, [emailMessage])
+  const checkEmailIsSubmittable: ValidateSubmitIsPassFunc = (pwMessage) => {
+    return pwMessage === 'validPwConfirm'
+  }
+  useCheckSubmitValidation(emailMessage, checkEmailIsSubmittable, setSubmitPassState)
 
   // 인증 요청 시간 갱신을 위한 로직
   useEffect(() => {
