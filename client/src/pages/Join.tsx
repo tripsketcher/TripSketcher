@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '../hooks/useRouter'
 
+import SubmitButton from 'component/Join/JoinSubmitButton'
 import Email from 'component/common/EmailVerification'
-// import Email from 'component/Join/JoinEmail'
-// import Password from './Password'
-// import PasswordConfirm from 'component/common/PasswordConfirm'
+import Password from 'component/common/PasswordVerification'
+import PasswordConfirm from 'component/common/PasswordConfirm'
 // import Nickname from './Nickname'
 // import Phone from './Phone'
-import SubmitButton from 'component/Join/JoinSubmitButton'
 
 // import { joinApi } from 'service/api/auth'
 
@@ -25,6 +24,12 @@ const Join = () => {
     password: false,
     passwordConfirm: false,
   })
+
+  // check submit is available individually
+  // -> SubmitButton에서 어떻게 확인할건데..
+
+  const [isPwSubmitValid, setIsPwSubmitValid] = useState(false)
+
   const pageExpirationTimeRef = useRef(60 * 60) // 3600초(1시간)
   // const { routeTo } = useRouter()
 
@@ -72,7 +77,7 @@ const Join = () => {
         <h1>회원가입</h1>
         <form onSubmit={handleSubmit} className={styles.joinForm}>
           <Email setSubmitPassState={setSubmitPassState} pageExpirationTimeRef={pageExpirationTimeRef} />
-          {/* <Password /> */}
+          <Password type='pw' setSubmitPassState={setIsPwSubmitValid} />
           {/* <PasswordConfirm /> */}
           {/* <Nickname /> */}
           {/* <Phone /> */}

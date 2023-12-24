@@ -1,5 +1,6 @@
-export { ReactComponent as OpenedPwIcon } from './openedPw.svg'
-export { ReactComponent as ClosedPwIcon } from './closedPw.svg'
+// password
+export { ReactComponent as ClosedPwIcon } from 'assets/svgs/closedPw.svg'
+export { ReactComponent as OpenedPwIcon } from 'assets/svgs/openedPw.svg'
 
 // export { ReactComponent as CheckIcon } from './check.svg'
 // export { ReactComponent as DefaultProfile } from './defaultProfile.svg'

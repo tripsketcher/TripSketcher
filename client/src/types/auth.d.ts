@@ -5,9 +5,9 @@ export type EmailMessageType = EmailErrorMessage | EmailSuccessMessage
 type PwErrorMessage = 'shortPw' | 'tooLongPw' | 'singleKindPw' | 'unableChar'
 type PwSuccessMessage = 'lowSafePw' | 'middleSafePw' | 'highSafePw'
 export type PwMessageType = PwErrorMessage | PwSuccessMessage
-type Pw2ErrorMessage = 'notMatchedPw'
-type Pw2SuccessMessage = 'validPw2'
-export type Pw2MessageType = Pw2ErrorMessage | Pw2SuccessMessage
+type PwConfirmErrorMessage = 'notMatchedPw'
+type PwConfirmSuccessMessage = 'validPwConfirm'
+export type PwConfirmMessageType = PwConfirmErrorMessage | PwConfirmSuccessMessage
 type NicknameErrorMessage = 'unableChar' | 'duplicateNickname'
 type NicknameSuccessMessage = 'validNickname'
 export type NicknameMessageType = NicknameErrorMessage | NicknameSuccessMessage
@@ -16,10 +16,10 @@ type PhoneSuccessMessage = 'validPhone'
 export type PhoneMessageType = PhoneErrorMessage | PhoneSuccessMessage
 
 export type MessageType = {
-  [key in EmailMessageType | PwMessageType | Pw2MessageType | NicknameMessageType | PhoneMessageType]: string
+  [key in EmailMessageType | PwMessageType | PwConfirmMessageType | NicknameMessageType | PhoneMessageType]: string
 }
 export type PwSafeType = 'dangerous' | 'normal' | 'safe'
-export type PwType = 'pw1' | 'pw2' | 'currentPw' | 'newPw' | 'newPwConfirm'
+export type PwType = 'pw' | 'pwConfirm' | 'currentPw' | 'newPw' | 'newPwConfirm'
 export type PwTypeInfo = {
   [key in PwType]: string
 }
@@ -49,3 +49,5 @@ export interface PwChangeValidationInfo {
   newPw: boolean
   newPwConfirm: boolean
 }
+
+type ValidateSubmitIsPassFunc = (state: unknown) => boolean

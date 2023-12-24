@@ -16,7 +16,7 @@ export const messageInfo: MessageType = {
   lowSafePw: '비밀 번호 등급 : 낮음',
   middleSafePw: '비밀 번호 등급 : 보통',
   highSafePw: '비밀 번호 등급 : 높음',
-  validPw2: '비밀번호가 일치합니다.',
+  validPwConfirm: '비밀번호가 일치합니다.',
 
   // phone
   notPhoneFormat: '올바르지 않은 전화번호 형식입니다.',
@@ -42,6 +42,6 @@ export const pwTypeInfo: PwTypeInfo = {
   currentPw: '현재 비밀번호',
   newPw: '신규 비밀번호',
   newPwConfirm: '신규 비밀번호 확인',
-  pw1: '비밀번호',
-  pw2: '비밀번호 확인',
+  pw: '비밀번호',
+  pwConfirm: '비밀번호 확인',
 }

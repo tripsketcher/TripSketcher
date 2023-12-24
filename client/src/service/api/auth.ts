@@ -2,7 +2,7 @@ import axios from 'axios'
 import { BASE_URL } from 'utils/const/api'
 import { SendCodeErrorHandler, checkCodeErrorHandler } from './axios'
 import { AsyncErrorResponse, SendCodeResponse, CheckCodeResponse, checkDuplicationResponse } from 'types/async'
-import { isSendCodeErrorResponse } from 'utils/typeFilter'
+// import { isSendCodeErrorResponse } from 'utils/typeFilter'
 
 // # Join
 
