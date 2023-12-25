@@ -21,8 +21,8 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
   const [emailMessage, setEmailMessage] = useState<EmailMessageType | null>(null)
 
   // Form Submit을 위한 Email 유효성 검증 로직
-  const checkEmailIsSubmittable: ValidateSubmitIsPassFunc = (pwMessage) => {
-    return pwMessage === 'validPwConfirm'
+  const checkEmailIsSubmittable: ValidateSubmitIsPassFunc = (emailMessage) => {
+    return emailMessage === 'certifiedEmail'
   }
   useCheckSubmitValidation(emailMessage, checkEmailIsSubmittable, setSubmitPassState)
 
