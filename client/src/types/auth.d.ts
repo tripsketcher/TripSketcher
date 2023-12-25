@@ -37,17 +37,19 @@ export type InputColorInfo = {
 }
 
 // Join Type
-export interface JoinValidationInfo {
-  email: boolean
-  password: boolean
-  passwordConfirm: boolean
+export type JoinValidationKeys = 'email' | 'password' | 'passwordConfirm'
+export type JoinValidationInfo = {
+  [key in JoinValidationKeys]: boolean
 }
 
 // UserInfo Change Type
-export interface PwChangeValidationInfo {
-  currentPw: boolean
-  newPw: boolean
-  newPwConfirm: boolean
-}
+export type PwChangeValidationKeys = 'currentPw' | 'newPw' | 'newPwConfirm'
 
+export type PwChangeValidationInfo = {
+  [key in PwChangeValidationKeys]: boolean
+}
+type SubmitValidationKeyType = JoinValidationKeys | JoinValidationKeys
+export type SubmitValidationInfo = {
+  [key in SubmitValidationKeyType]: boolean
+}
 type ValidateSubmitIsPassFunc = (state: unknown) => boolean

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '../hooks/useRouter'
 
-import SubmitButton from 'component/Join/JoinSubmitButton'
+import SubmitButton from 'component/Join/SubmitButton'
 import Email from 'component/common/EmailVerification'
 import Password from 'component/common/PasswordVerification'
 import PasswordConfirm from 'component/common/PasswordConfirm'
@@ -19,18 +19,17 @@ import styles from './Join.module.scss'
 // - 일반적인 경우에는 onFocusout 이벤트나 blur이벤트로 관리해주기
 // - 아이디 및 비밀번호 유효성 검사의 경우에는 onChangeEvent
 const Join = () => {
-  const [submitPassState, setSubmitPassState] = useState<JoinValidationInfo>({
-    email: false,
-    password: false,
-    passwordConfirm: false,
-  })
+  const [password, setPassword] = useState('')
 
   // check submit is available individually
-  // -> SubmitButton에서 어떻게 확인할건데..
-  const [password, setPassword] = useState('')
   const [isEmailSubmitValid, setIsEmailSubmitValid] = useState(false)
   const [isPwSubmitValid, setIsPwSubmitValid] = useState(false)
   const [isPwConfirmSubmitValid, setIsPwConfirmSubmitValid] = useState(false)
+  const submitStateObject = {
+    email: isEmailSubmitValid,
+    password: isPwSubmitValid,
+    passwordConfirm: isPwConfirmSubmitValid,
+  }
 
   const pageExpirationTimeRef = useRef(60 * 60) // 3600초(1시간)
   // const { routeTo } = useRouter()
@@ -83,7 +82,7 @@ const Join = () => {
           <PasswordConfirm type='pwConfirm' firstPw={password} setSubmitPassState={setIsPwConfirmSubmitValid} />
           {/* <Nickname /> */}
           {/* <Phone /> */}
-          <SubmitButton submitPassState={submitPassState} setSubmitPassState={setSubmitPassState} />
+          <SubmitButton submitPassState={submitStateObject}>회원가입</SubmitButton>
         </form>
       </section>
     </div>
