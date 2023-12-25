@@ -14,11 +14,11 @@ interface JoinRequest {
   nickname: string
   phone: string
 }
-export type JoinResResult = 'success' | 'fail'
+export type JoinResResponse = 'success' | 'fail'
 
 // ## Email
 export interface checkDuplicationResponse {
-  data: boolean
+  data: true | false | null
 }
 
 export interface SendCodeResponse {

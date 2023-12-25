@@ -1,5 +1,11 @@
 import axios from 'axios'
-import { AsyncErrorResponse, SendCodeResponse, CheckCodeResponse } from 'types/async'
+import {
+  AsyncErrorResponse,
+  SendCodeResponse,
+  CheckCodeResponse,
+  JoinResponse,
+  checkDuplicationResponse,
+} from 'types/async'
 
 export enum HttpStatusCode {
   BadRequest = 400,
@@ -35,7 +41,28 @@ export const $axios = axios.create({
 //   return { error: 'A network or configuration error occurred', statusCode: null }
 // }
 
-export const SendCodeErrorHandler = (error: unknown): SendCodeResponse => {
+export const handleEmailDuplicationError = (error: unknown): checkDuplicationResponse => {
+  if (axios.isAxiosError(error)) {
+    console.log('에러 발생')
+    const statusCode = error.response?.status
+    switch (statusCode) {
+      case HttpStatusCode.Conflict:
+        // 409 Conflict 처리
+        return { data: true }
+      case HttpStatusCode.BadRequest:
+        // 400 BadRequest 처리
+        alert('요청이 실패되었습니다. 다시 시도해주세요.')
+        return { data: null }
+    }
+    alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
+    return { data: null }
+  } else {
+    alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
+    return { data: null }
+  }
+}
+
+export const handleSendCodeError = (error: unknown): SendCodeResponse => {
   if (axios.isAxiosError(error)) {
     console.log('에러 발생')
     const statusCode = error.response?.status
@@ -56,7 +83,7 @@ export const SendCodeErrorHandler = (error: unknown): SendCodeResponse => {
   }
 }
 
-export const checkCodeErrorHandler = (error: unknown): CheckCodeResponse => {
+export const handleCheckCodeError = (error: unknown): CheckCodeResponse => {
   if (axios.isAxiosError(error)) {
     const statusCode = error.response?.status
 

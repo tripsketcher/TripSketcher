@@ -1,22 +1,25 @@
 import axios from 'axios'
 import { BASE_URL } from 'utils/const/api'
-import { SendCodeErrorHandler, checkCodeErrorHandler } from './axios'
-import { AsyncErrorResponse, SendCodeResponse, CheckCodeResponse, checkDuplicationResponse } from 'types/async'
+import { handleSendCodeError, handleCheckCodeError, handleEmailDuplicationError } from './axios'
+import {
+  AsyncErrorResponse,
+  SendCodeResponse,
+  CheckCodeResponse,
+  checkDuplicationResponse,
+  JoinRequest,
+  JoinResponse,
+} from 'types/async'
 // import { isSendCodeErrorResponse } from 'utils/typeFilter'
 
 // # Join
 
 // ## Email
-export const checkDuplicationApi = async (email: string): Promise<checkDuplicationResponse | AsyncErrorResponse> => {
+export const checkDuplicationApi = async (email: string): Promise<checkDuplicationResponse> => {
   // try {
   //   const apiRes = await axios.post(`${BASE_URL}/api/users/email`, { email })
-  //   return apiRes.data
+  //   return { data: true }
   // } catch (error) {
-  //   const errorResult = axiosErrorHandler(error)
-  //   if (isSendCodeErrorResponse(errorResult)) {
-  //     return errorResult
-  //   }
-  //   return errorResult
+  //   return handleEmailDuplicationError(error)
   // }
   return { data: false }
 }
@@ -29,7 +32,7 @@ export const sendVerificationCodeApi = async (email: string): Promise<SendCodeRe
   //   return apiRes.data
   //   // return {data: 'success'}
   // } catch (error) {
-  //   return SendCodeErrorHandler(error)
+  //   return handleSendCodeError(error)
   // }
   return { data: 'success' }
 }
@@ -40,7 +43,7 @@ export const checkVerificationCodeApi = async (code: string): Promise<CheckCodeR
   //   // return apiRes.data
   //   return { data: 'success' }
   // } catch (error) {
-  //   return checkCodeErrorHandler(error)
+  //   return handleCheckCodeError(error)
   // }
   return { data: 'success' }
 }
