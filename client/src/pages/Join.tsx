@@ -5,12 +5,8 @@ import SubmitButton from 'component/Join/SubmitButton'
 import Email from 'component/common/EmailVerification'
 import Password from 'component/common/PasswordVerification'
 import PasswordConfirm from 'component/common/PasswordConfirm'
-// import Nickname from './Nickname'
-// import Phone from './Phone'
 
-// import { joinApi } from 'service/api/auth'
-
-import { JoinValidationInfo } from 'types/auth'
+import { submitJoinInfoApi } from 'service/api/auth'
 
 import styles from './Join.module.scss'
 
@@ -32,7 +28,7 @@ const Join = () => {
   }
 
   const pageExpirationTimeRef = useRef(60 * 60) // 3600초(1시간)
-  // const { routeTo } = useRouter()
+  const { routeTo } = useRouter()
 
   // 페이지 만료 시간 설정
   useEffect(() => {
@@ -57,19 +53,19 @@ const Join = () => {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    // console.log({ email, password, nickname, phone })
+    console.log({ email, password })
 
-    // const joinResult = await joinApi({
-    //   email,
-    //   password,
-    // })
+    const joinResult = await submitJoinInfoApi({
+      email,
+      password,
+    })
 
-    // if (joinResult === 'fail') {
-    //   alert('회원가입에 과정에 문제가 발생하였습니다.')
-    //   return
-    // }
+    if (joinResult === 'fail') {
+      alert('회원가입에 과정에 문제가 발생하였습니다.')
+      return
+    }
 
-    // routeTo('/login')
+    routeTo('/login')
   }
 
   return (
@@ -80,8 +76,6 @@ const Join = () => {
           <Email setSubmitPassState={setIsEmailSubmitValid} pageExpirationTimeRef={pageExpirationTimeRef} />
           <Password type='pw' setPassword={setPassword} setSubmitPassState={setIsPwSubmitValid} />
           <PasswordConfirm type='pwConfirm' firstPw={password} setSubmitPassState={setIsPwConfirmSubmitValid} />
-          {/* <Nickname /> */}
-          {/* <Phone /> */}
           <SubmitButton submitPassState={submitStateObject}>회원가입</SubmitButton>
         </form>
       </section>

@@ -108,3 +108,20 @@ export const handleCheckCodeError = (error: unknown): CheckCodeResponse => {
     return { data: 'fail' }
   }
 }
+
+export const handleSubmitJoinInfoError = (error: unknown): JoinResponse => {
+  if (axios.isAxiosError(error)) {
+    console.log('에러 발생')
+    const statusCode = error.response?.status
+    switch (statusCode) {
+      case HttpStatusCode.Forbidden:
+        alert('회원 가입 요청이 실패하였습니다. 잠시 후 다시 시도해주세요.')
+        return 'fail'
+    }
+    alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
+    return 'fail'
+  } else {
+    alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
+    return 'fail'
+  }
+}

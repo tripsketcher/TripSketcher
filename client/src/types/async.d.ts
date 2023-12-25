@@ -11,10 +11,8 @@ export interface AsyncErrorResponse {
 interface JoinRequest {
   email: string
   password: string
-  nickname: string
-  phone: string
 }
-export type JoinResResponse = 'success' | 'fail'
+export type JoinResponse = 'success' | 'fail'
 
 // ## Email
 export interface checkDuplicationResponse {

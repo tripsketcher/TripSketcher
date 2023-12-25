@@ -1,6 +1,11 @@
 import axios from 'axios'
 import { BASE_URL } from 'utils/const/api'
-import { handleSendCodeError, handleCheckCodeError, handleEmailDuplicationError } from './axios'
+import {
+  handleSendCodeError,
+  handleCheckCodeError,
+  handleEmailDuplicationError,
+  handleSubmitJoinInfoError,
+} from './axios'
 import {
   AsyncErrorResponse,
   SendCodeResponse,
@@ -46,4 +51,18 @@ export const checkVerificationCodeApi = async (code: string): Promise<CheckCodeR
   //   return handleCheckCodeError(error)
   // }
   return { data: 'success' }
+}
+
+// ## Submit button
+export const submitJoinInfoApi = async (args: JoinRequest): Promise<JoinResponse> => {
+  // try {
+  //   await axios.post(`${BASE_URL}/users/user`, {
+  //     args,
+  //   })
+
+  //   return 'success'
+  // } catch (error) {
+  //   return handleSubmitJoinInfoError(error)
+  // }
+  return 'success'
 }
