@@ -1,0 +1,12 @@
+@use '/src/styles/constants/colors';
+@use '/src/styles/constants/levels';
+@use '/src/styles/mixins/visual';
+
+.pwIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.pwButtonText {
+  @include visual.hidden;
+}

@@ -5,7 +5,9 @@ import {
   CheckCodeResponse,
   JoinResponse,
   checkDuplicationResponse,
+  LoginResponse,
 } from 'types/async'
+import { BASE_URL } from 'utils/const/api'
 
 export enum HttpStatusCode {
   BadRequest = 400,
@@ -17,7 +19,15 @@ export enum HttpStatusCode {
 }
 
 // Axios instance
-export const $axios = axios.create({
+export const basicAxios = axios.create({
+  baseURL: `${BASE_URL}/api`,
+  headers: {
+    'Content-type': 'application/json',
+  },
+})
+
+export const credentialAxios = axios.create({
+  baseURL: BASE_URL,
   headers: {
     'Content-type': 'application/json',
   },
@@ -123,5 +133,27 @@ export const handleSubmitJoinInfoError = (error: unknown): JoinResponse => {
   } else {
     alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
     return 'fail'
+  }
+}
+
+export const handleSubmitLoginInfoError = (error: unknown): LoginResponse => {
+  if (axios.isAxiosError(error)) {
+    const statusCode = error.response?.status
+    switch (statusCode) {
+      case 400:
+        alert('이메일 또는 비밀번호가 틀렸습니다')
+        return { accessToken: null }
+      case 401:
+        alert('이메일 또는 비밀번호가 틀렸습니다')
+        return { accessToken: null }
+      case 403:
+        alert('비밀번호가 5회 틀렸습니다. 계정이 30분간 잠깁니다')
+        return { accessToken: null }
+    }
+    alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
+    return { accessToken: null }
+  } else {
+    alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
+    return { accessToken: null }
   }
 }

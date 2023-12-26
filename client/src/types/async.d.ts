@@ -26,6 +26,12 @@ export interface SendCodeResponse {
 export interface CheckCodeResponse {
   data: 'success' | 'fail' | EmailErrorMessage
 }
-// ## Nickname
-// -
-interface DuplicateNickNameResponse {}
+
+// # Login
+export interface LoginRequest {
+  email: string
+  password: string
+}
+export type LoginResponse = {
+  accessToken: string | null
+}
