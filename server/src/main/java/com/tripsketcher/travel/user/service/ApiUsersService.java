@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -44,6 +45,8 @@ public class ApiUsersService {
     private final int VERIFICATION_CODE_SIZE = 10;
     private final int NEW_PASSWORD_SIZE = 8;
     private final String EMAIL_LIMIT_TIME_KEY="email_authentication_code:";
+    private final String CHANGE_PWD_AUTH = "changePwdAuth:";
+
 
     // service method
 
@@ -60,12 +63,9 @@ public class ApiUsersService {
         duplicateEmail(requestDto.getEmail());
         int count = checkEmailRequestLimit(key, email);
 
-        String verificationCode = getAuthenticationCode(email);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Trip Sketcher Verification Code");
-        message.setText("This is your " + count + " request.\nYour verification code is: " + verificationCode);
-        mailSender.send(message);
+        String verificationCode = getAuthenticationCode(EMAIL_LIMIT_TIME_KEY, email, TIME_LIMIT_MINUTES);
+        sendEmail(email, "Trip Sketcher Verification Code",
+                "This is your " + count + " request.\nYour verification code is: " + verificationCode);
 
         updateRequestCount(key, email);
     }
@@ -135,14 +135,32 @@ public class ApiUsersService {
         Users user = usersRepository.findByUserEmailAndDeletedDateIsNull(email)
                 .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_USER));
 
+        if(Boolean.TRUE.equals(redisTemplate.hasKey("lockAccount:" + user.getUserEmail()))){
+            throw new CustomException(ErrorType.ACCOUNT_LOCKED);
+        }
+
         if(!passwordEncoder.matches(password, user.getUserPassword())){
             if(user.getFailedLoginAttempts() < 5){
                 user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
             }
             if(user.getFailedLoginAttempts() >= 5){
-                user.setNonLocked(false);
                 user.setFailedLoginAttempts(0);
-                user.setUserPassword(sendNewPassword(email));
+                String lockEmailCountKey = "lockEmailCount:" + email;
+                if(Boolean.FALSE.equals(redisTemplate.hasKey(lockEmailCountKey))){
+                    redisTemplate.opsForValue().set(lockEmailCountKey, "0", 1, TimeUnit.DAYS);
+                }
+                redisTemplate.opsForValue().increment(lockEmailCountKey, 1);
+                if(Integer.parseInt(Objects.requireNonNull(redisTemplate.opsForValue().get(lockEmailCountKey))) <= 3){
+                    sendEmail(email, "Account Locked Due to Repeated Login Attempts",
+                            """
+                            Your account has been temporarily locked due to 5 consecutive failed login attempts.
+                            It will be unlocked after 30 minutes. Please be cautious with your login details.
+                  
+                            Note: Email notifications are limited to a maximum of 3 per day.
+                            Continuous attempts may result in additional account locking without further email notifications.
+                            """);
+                }
+                redisTemplate.opsForValue().set("lockAccount:" + email, email, 30, TimeUnit.MINUTES);
                 usersRepository.save(user);
                 throw new CustomException(ErrorType.ACCOUNT_LOCKED);
             }
@@ -151,30 +169,81 @@ public class ApiUsersService {
         }
 
         user.setFailedLoginAttempts(0);
-        user.setNonLocked(true);
         usersRepository.save(user);
 
         jwtTokenProvider.createAccessToken(user.getUsername(), response);
         jwtTokenProvider.createRefreshToken(user.getUsername(), response);
     }
 
-    public void passwordReset(PasswordResetRequestDto requestDto){
+    public void sendResetCode(EmailAuthenticationRequestDto requestDto){
         String email = requestDto.getEmail();
-        String sentEmailKey = "reset_password_email:"+email;
+        String passwordChangeKey = "passwordChange:" + email;
+        String sendPwdReqCntKey = "sendPwdReqCnt:" + email;
+
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(passwordChangeKey))){
+            throw new CustomException(ErrorType.PASSWORD_REQUEST_LIMIT_EXCEEDED);
+        }
+
+        usersRepository.findByUserEmailAndDeletedDateIsNull(email)
+                .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_USER));
+
+        if(Boolean.FALSE.equals(redisTemplate.hasKey(sendPwdReqCntKey))){
+            throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
+        }
+
+        String requestCountStr = redisTemplate.opsForValue().get(sendPwdReqCntKey);
+        if (requestCountStr != null) {
+            int requestCount = Integer.parseInt(requestCountStr);
+            if (requestCount >= 3) {
+                throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
+            }
+        }
+
+        String code = getAuthenticationCode(CHANGE_PWD_AUTH, email, 60 * 24);
+
+        sendEmail(email, "Password Reset Verification Code",
+                "We have received a request to reset the password for your Trip Sketcher account.\n" +
+                        "To proceed with resetting your password, please use the following verification code:\n\n" + code +
+                        "\nThis code will be valid for 3 minutes. If you did not request a password reset, " +
+                        "please ignore this email or contact us for assistance.\n\n" +
+                        "Note: You are allowed to reset your password only once per day. " +
+                        "Also, email notifications are limited to a maximum of 3 per day. This is request number " + Integer.parseInt(requestCountStr) + " of 3 today.\n\n" +
+                        "Best regards,\n" +
+                        "The Trip Sketcher Team");
+
+        updateChangePwdReqCnt(email);
+    }
+
+    public void resetPassword(EmailAuthenticationCodeRequestDto requestDto){
+        String email = requestDto.getEmail();
+        String code = requestDto.getCode();
+        String pwdReqCntKey = "pwdReqCnt:" + email;
+        String changePwdAuth = CHANGE_PWD_AUTH + email;
 
         Users user = usersRepository.findByUserEmailAndDeletedDateIsNull(email)
                 .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_USER));
 
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(sentEmailKey))){
-            throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
+        if(Boolean.FALSE.equals(redisTemplate.hasKey(changePwdAuth))){
+            throw new CustomException(ErrorType.VERIFICATION_CODE_MISMATCH);
         }
 
-        redisTemplate.opsForValue().set(sentEmailKey, email, 3, TimeUnit.MINUTES);
-        user.setUserPassword(sendNewPassword(email));
+        String requestCountStr = redisTemplate.opsForValue().get(pwdReqCntKey);
+        if (requestCountStr != null) {
+            int requestCount = Integer.parseInt(requestCountStr);
+            if (requestCount >= 3) {
+                throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
+            }
+        }else{
+
+        }
+
+
+        redisTemplate.opsForValue().set("passwordChange:" + email, email, getPwdChangeExpirationTime(email), TimeUnit.MINUTES);
+        user.setUserPassword(sendEmailNewPassword(email));
         usersRepository.save(user);
     }
 
-    // service internal method
+    // service internal method -------------------------------------------------------
 
     private int checkEmailRequestLimit(String key, String email){
         String countKey = key + email;
@@ -193,6 +262,16 @@ public class ApiUsersService {
         String countStr = redisTemplate.opsForValue().get(countKey);
         if(countStr == null){
             redisTemplate.opsForValue().set(countKey, "1", getExpirationTime(email), TimeUnit.SECONDS);
+        }else{
+            redisTemplate.opsForValue().increment(countKey, 1);
+        }
+    }
+
+    private void updateChangePwdReqCnt(String email){
+        String countKey = "sendPwdReqCnt:" + email;
+        String countStr = redisTemplate.opsForValue().get(countKey);
+        if(countStr == null){
+            redisTemplate.opsForValue().set(countKey, "1", getPwdChangeExpirationTime(email), TimeUnit.SECONDS);
         }else{
             redisTemplate.opsForValue().increment(countKey, 1);
         }
@@ -232,12 +311,12 @@ public class ApiUsersService {
     }
 
 
-    private String getAuthenticationCode(String email){
-        String codeKey = "email_authentication_code:" + email;
+    private String getAuthenticationCode(String key, String email, int time){
+        String codeKey = key + email;
         String codeVal = redisTemplate.opsForValue().get(codeKey);
         if(codeVal == null){
             codeVal = generateVerificationCode(VERIFICATION_CODE_SIZE);
-            redisTemplate.opsForValue().set(codeKey, codeVal, TIME_LIMIT_MINUTES, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(codeKey, codeVal, time, TimeUnit.MINUTES);
         }
         return codeVal;
     }
@@ -270,17 +349,35 @@ public class ApiUsersService {
         }
     }
 
-    private String sendNewPassword(String email){
+    private String sendEmailNewPassword(String email){
         String newPassword = generateVerificationCode(NEW_PASSWORD_SIZE);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Your New Password for Trip Sketcher");
-        message.setText("Your new password is: " + newPassword);
-        mailSender.send(message);
+        sendEmail(email, "Your New Password for Trip Sketcher",
+                "Your new password is: " + newPassword);
         return newPassword;
     }
 
     private Long getExpirationTime(String email){
+        return redisTemplate.getExpire(CHANGE_PWD_AUTH + email, TimeUnit.SECONDS);
+    }
+
+    private Long getPwdChangeExpirationTime(String email){
         return redisTemplate.getExpire(EMAIL_LIMIT_TIME_KEY + email, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Sends an email with the specified subject and text content to a given email address.
+     * This method creates a SimpleMailMessage object, sets the recipient's email, subject,
+     * and text of the message, and then sends the email using the JavaMailSender.
+     *
+     * @param email The email address of the recipient.
+     * @param subject The subject line of the email.
+     * @param text The body content of the email.
+     */
+    private void sendEmail(String email, String subject, String text){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
     }
 }

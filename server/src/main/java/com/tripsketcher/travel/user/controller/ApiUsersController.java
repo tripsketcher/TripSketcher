@@ -53,9 +53,14 @@ public class ApiUsersController {
         return ResponseUtils.ok(MsgType.LOGIN_SUCCESSFULLY);
     }
 
+    @PostMapping("/forgot-password")
+    public ApiResponseDto<Void> sendResetCode(@Valid @RequestBody EmailAuthenticationRequestDto requestDto) {
+        apiUsersService.sendResetCode(requestDto);
+        return ResponseUtils.ok(MsgType.AUTHENTICATION_EMAIL_SENT);
+    }
     @PatchMapping("/password-reset")
-    public ApiResponseDto<Void> passwordReset(@Valid @RequestBody PasswordResetRequestDto requestDto){
-        apiUsersService.passwordReset(requestDto);
+    public ApiResponseDto<Void> resetPassword(@Valid @RequestBody EmailAuthenticationCodeRequestDto requestDto){
+        apiUsersService.resetPassword(requestDto);
         return ResponseUtils.ok(MsgType.RESET_PASSWORD_EMAIL_SENT);
     }
 }
