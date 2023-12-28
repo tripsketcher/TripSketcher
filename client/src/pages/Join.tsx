@@ -51,7 +51,7 @@ const Join = () => {
     // get formData value
     const formData = new FormData(event.currentTarget)
     const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    // const password = formData.get('password') as string
 
     console.log({ email, password })
 
@@ -61,7 +61,6 @@ const Join = () => {
     })
 
     if (joinResult === 'fail') {
-      alert('회원가입에 과정에 문제가 발생하였습니다.')
       return
     }
 

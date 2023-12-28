@@ -5,6 +5,7 @@ import { EmailMessageType } from 'types/auth'
 const INITIAL_TIME = 180
 
 interface VerificationCodeProps {
+  emailText: string
   pageExpirationTimeRef?: React.MutableRefObject<number>
   verificationTime: number
   setVerificationTime: React.Dispatch<React.SetStateAction<number>>
@@ -13,6 +14,7 @@ interface VerificationCodeProps {
 }
 
 const VerificationCode = ({
+  emailText,
   verificationTime,
   setVerificationTime,
   setShowVerificationSection,
@@ -26,7 +28,7 @@ const VerificationCode = ({
     setVerificationCode(codeText)
   }
   const handleCheckVerificationCode = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    const checkCodeRes = await checkVerificationCodeApi(verificationCode)
+    const checkCodeRes = await checkVerificationCodeApi({ email: emailText, code: verificationCode })
 
     if (checkCodeRes === 'fail') return
     if (checkCodeRes === 'duplicatedEmail') {
@@ -56,7 +58,11 @@ const VerificationCode = ({
         <input type='text' name='certify-code' placeholder='인증코드를 입력해주세요.' onChange={handleCodeChange} />
         <p>{changeTimeToMinuteFormat(verificationTime)}</p>
       </label>
-      <button onClick={handleCheckVerificationCode} disabled={verificationTime <= 0 || verificationCode.length === 0}>
+      <button
+        type='button'
+        onClick={handleCheckVerificationCode}
+        disabled={verificationTime <= 0 || verificationCode.length === 0}
+      >
         인증 확인
       </button>
     </div>

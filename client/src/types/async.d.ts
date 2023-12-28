@@ -19,4 +19,8 @@ export type checkDuplicationResponse = true | false | null
 
 export type SendCodeResponse = 'success' | 'fail' | EmailErrorMessage | 'tooManyRequest'
 
+export interface CheckCodeRequest {
+  email: string
+  code: string
+}
 export type CheckCodeResponse = 'success' | 'fail' | EmailErrorMessage

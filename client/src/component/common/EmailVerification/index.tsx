@@ -123,6 +123,7 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
       </div>
       {showVerificationSection && (
         <VerificationInput
+          emailText={emailText}
           pageExpirationTimeRef={pageExpirationTimeRef}
           verificationTime={verificationTime}
           setVerificationTime={setVerificationTime}
