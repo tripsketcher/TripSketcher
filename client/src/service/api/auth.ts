@@ -14,22 +14,19 @@ import {
   JoinRequest,
   JoinResponse,
 } from 'types/async'
-// import { isSendCodeErrorResponse } from 'utils/typeFilter'
 
 // # Join
-
+// Todo: {data: 내용}부분으로 응답 형식이 정해져 있는 건 data없는 형식으로 고치기
 // ## Email
 export const checkDuplicationApi = async (email: string): Promise<checkDuplicationResponse> => {
   // try {
   //   const apiRes = await axios.post(`${BASE_URL}/api/users/email`, { email })
-  //   return { data: true }
+  //   return  true
   // } catch (error) {
   //   return handleEmailDuplicationError(error)
   // }
-  return { data: false }
+  return false
 }
-
-// 인증 코드 발송 Api
 
 export const sendVerificationCodeApi = async (email: string): Promise<SendCodeResponse> => {
   // try {
@@ -39,7 +36,7 @@ export const sendVerificationCodeApi = async (email: string): Promise<SendCodeRe
   // } catch (error) {
   //   return handleSendCodeError(error)
   // }
-  return { data: 'success' }
+  return 'success'
 }
 
 export const checkVerificationCodeApi = async (code: string): Promise<CheckCodeResponse> => {
@@ -50,7 +47,7 @@ export const checkVerificationCodeApi = async (code: string): Promise<CheckCodeR
   // } catch (error) {
   //   return handleCheckCodeError(error)
   // }
-  return { data: 'success' }
+  return 'success'
 }
 
 // ## Submit button

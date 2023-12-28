@@ -60,18 +60,19 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
   // - 디바운스로 인해 이메일이 바뀔 때 마다 유효성 검증 수행
   const checkDuplication = async (email: string): Promise<boolean | null> => {
     const duplicationRes = await checkDuplicationApi(email)
-    return duplicationRes.data
+    return duplicationRes
   }
   const checkEmailValidation = async (email: string) => {
     const validEmailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ // 이메일 표준 정규식(email regex w3c)
     const tooLongEmailReg = /^.{50,}$/
-    const isDuplicated = await checkDuplication(email)
 
     if (email.length === 0) {
       setEmailMessage(null)
       return
     }
+
     if (validEmailReg.test(email)) {
+      const isDuplicated = await checkDuplication(email)
       if (tooLongEmailReg.test(email)) {
         setEmailMessage('tooLongEmail')
         return
@@ -95,10 +96,10 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
   // 서버에 이메일 인증 관련 api 호출
   const handleSendVerificationCode = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const sendingCodeRes = await sendVerificationCodeApi(emailText)
-    console.log(sendingCodeRes.data, verificationTime)
+    console.log(sendingCodeRes, verificationTime)
 
-    if (sendingCodeRes.data === 'fail') return
-    if (sendingCodeRes.data === 'duplicatedEmail') {
+    if (sendingCodeRes === 'fail') return
+    if (sendingCodeRes === 'duplicatedEmail') {
       setEmailMessage('duplicatedEmail')
       return
     }

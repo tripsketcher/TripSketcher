@@ -48,17 +48,17 @@ export const handleEmailDuplicationError = (error: unknown): checkDuplicationRes
     switch (statusCode) {
       case HttpStatusCode.Conflict:
         // 409 Conflict 처리
-        return { data: true }
+        return true
       case HttpStatusCode.BadRequest:
         // 400 BadRequest 처리
         alert('요청이 실패되었습니다. 다시 시도해주세요.')
-        return { data: null }
+        return null
     }
     alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
-    return { data: null }
+    return null
   } else {
     alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
-    return { data: null }
+    return null
   }
 }
 
@@ -69,17 +69,17 @@ export const handleSendCodeError = (error: unknown): SendCodeResponse => {
     switch (statusCode) {
       case HttpStatusCode.Conflict:
         // 409 Conflict 처리
-        return { data: 'duplicatedEmail' }
+        return 'duplicatedEmail'
       case HttpStatusCode.TooManyRequests:
         // 429 TooManyRequests 처리
         alert('인증 코드 입력 발송 횟수를 초과하였습니다. 시간 만료 이후 다시 시도해주세요.')
-        return { data: 'tooManyRequest' }
+        return 'tooManyRequest'
     }
     alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
-    return { data: 'fail' }
+    return 'fail'
   } else {
     alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
-    return { data: 'fail' }
+    return 'fail'
   }
 }
 
@@ -90,22 +90,22 @@ export const handleCheckCodeError = (error: unknown): CheckCodeResponse => {
     switch (statusCode) {
       case HttpStatusCode.Conflict:
         // 409 Conflict 처리
-        return { data: 'duplicatedEmail' }
+        return 'duplicatedEmail'
       case HttpStatusCode.BadRequest:
         // 400 BadRequest 처리
         alert('요청이 실패되었습니다. 다시 시도해주세요.')
-        return { data: 'fail' }
+        return 'fail'
       case HttpStatusCode.TooManyRequests:
         // 429 TooManyRequests 처리
         alert('인증 코드 입력 횟수를 초과했습니다. 새로운 인증 코드를 발급 후 다시 시도해주세요.')
-        return { data: 'fail' }
+        return 'fail'
     }
 
-    return { data: 'fail' }
+    return 'fail'
   } else {
     // return { error: 'NonAxiosError', message: '비 Axios 에러 발생' }
     alert('비 Axios 에러 발생')
-    return { data: 'fail' }
+    return 'fail'
   }
 }
 

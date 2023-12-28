@@ -15,17 +15,8 @@ interface JoinRequest {
 export type JoinResponse = 'success' | 'fail'
 
 // ## Email
-export interface checkDuplicationResponse {
-  data: true | false | null
-}
+export type checkDuplicationResponse = true | false | null
 
-export interface SendCodeResponse {
-  data: 'success' | 'fail' | EmailErrorMessage | 'tooManyRequest'
-}
+export type SendCodeResponse = 'success' | 'fail' | EmailErrorMessage | 'tooManyRequest'
 
-export interface CheckCodeResponse {
-  data: 'success' | 'fail' | EmailErrorMessage
-}
-// ## Nickname
-// -
-interface DuplicateNickNameResponse {}
+export type CheckCodeResponse = 'success' | 'fail' | EmailErrorMessage

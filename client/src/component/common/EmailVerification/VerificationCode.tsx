@@ -28,8 +28,8 @@ const VerificationCode = ({
   const handleCheckVerificationCode = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const checkCodeRes = await checkVerificationCodeApi(verificationCode)
 
-    if (checkCodeRes.data === 'fail') return
-    if (checkCodeRes.data === 'duplicatedEmail') {
+    if (checkCodeRes === 'fail') return
+    if (checkCodeRes === 'duplicatedEmail') {
       setShowVerificationSection(false)
       setVerificationTime(INITIAL_TIME)
       setEmailMessage('duplicatedEmail')
