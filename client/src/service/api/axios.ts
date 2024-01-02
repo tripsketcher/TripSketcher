@@ -6,6 +6,7 @@ import {
   JoinResponse,
   checkDuplicationResponse,
   LoginResponse,
+  UserInfoResponse,
 } from 'types/async'
 import { BASE_URL } from 'utils/const/api'
 
@@ -153,7 +154,23 @@ export const handleSubmitLoginInfoError = (error: unknown): LoginResponse => {
     alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
     return { accessToken: null }
   } else {
-    alert('네트워크나 환경 구성에서  문제가 발생했습니다.')
+    alert('네트워크나 환경 구성에서 문제가 발생했습니다.')
     return { accessToken: null }
+  }
+}
+
+export const handleGetUserInfoError = (error: unknown): UserInfoResponse => {
+  if (axios.isAxiosError(error)) {
+    const statusCode = error.response?.status
+    switch (statusCode) {
+      case 400:
+        alert('회원 정보 요청에 실패하였습니다.')
+        return { data: null }
+    }
+    alert('서버와 연결이 불안정합니다. 나중에 다시 시도해주세요.')
+    return { data: null }
+  } else {
+    alert('네트워크나 환경 구성에서 문제가 발생했습니다.')
+    return { data: null }
   }
 }

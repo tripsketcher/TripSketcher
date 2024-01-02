@@ -1,5 +1,6 @@
 import { EmailErrorMessage } from './auth'
 import { EmailErrorMessage } from 'types/auth'
+import { UserInfo } from './user'
 
 // # Common
 export interface AsyncErrorResponse {
@@ -34,4 +35,9 @@ export interface LoginRequest {
 }
 export type LoginResponse = {
   accessToken: string | null
+}
+
+// # UserInfo
+export interface UserInfoResponse {
+  data: UserInfo | null
 }

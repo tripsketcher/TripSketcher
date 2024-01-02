@@ -6,6 +6,7 @@ import {
   handleEmailDuplicationError,
   handleSubmitJoinInfoError,
   handleSubmitLoginInfoError,
+  handleGetUserInfoError,
 } from './axios'
 import {
   AsyncErrorResponse,
@@ -16,6 +17,7 @@ import {
   JoinResponse,
   LoginRequest,
   LoginResponse,
+  UserInfoResponse,
 } from 'types/async'
 // import { isSendCodeErrorResponse } from 'utils/typeFilter'
 
@@ -77,5 +79,15 @@ export const submitLoginInfoApi = async ({ email, password }: LoginRequest): Pro
     return { accessToken: response.headers['authorization'] }
   } catch (error) {
     return handleSubmitLoginInfoError(error)
+  }
+}
+
+// # UserInfo
+export const getCurrentUserApi = async (accessToken: string): Promise<UserInfoResponse> => {
+  try {
+    const apiRes = await axios.post(`${BASE_URL}/users/info`)
+    return apiRes.data
+  } catch (error) {
+    return handleGetUserInfoError(error)
   }
 }
