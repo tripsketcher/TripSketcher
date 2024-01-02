@@ -30,13 +30,15 @@ export const checkDuplicationApi = async (email: string): Promise<checkDuplicati
 
 export const sendVerificationCodeApi = async (email: string): Promise<SendCodeResponse> => {
   try {
-    await axios.post(`${BASE_URL}/api/users/email`, { email })
+    const apiRes = await axios.post(`${BASE_URL}/api/users/email`, { email })
+    const tryCount = apiRes.data.data
+    if (tryCount > 5) {
+      alert(`하루 이메일 전송 횟수는 이메일당 10번으로 제한됩니다. 이메일 시도 횟수 : ${tryCount}`)
+    }
     return 'success'
-  } catch (error) {}
-  // catch (error) {
-  // return handleSendCodeError(error)
-  // }
-  return 'success'
+  } catch (error) {
+    return handleSendCodeError(error)
+  }
 }
 
 export const checkVerificationCodeApi = async (args: CheckCodeRequest): Promise<CheckCodeResponse> => {

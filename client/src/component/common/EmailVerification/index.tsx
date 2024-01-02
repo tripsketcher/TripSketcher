@@ -103,11 +103,9 @@ const EmailVerification = ({ setSubmitPassState, pageExpirationTimeRef }: EmailV
       setEmailMessage('duplicatedEmail')
       return
     }
-    // 잔여 시간이 남아 있을 경우에는 잔여 시간을 갱신하지 않도록, 전송만 보낸다.
-    if (verificationTime <= 0 || verificationTime === INITIAL_TIME) {
-      setShowVerificationSection(true)
-      setVerificationTime(INITIAL_TIME)
-    }
+
+    setShowVerificationSection(true)
+    setVerificationTime(INITIAL_TIME)
   }
 
   return (
