@@ -132,9 +132,9 @@ export const routers: RemixRouter = createBrowserRouter(
         path: router.path,
         element: (
           <MemoryPastUrlLayout>
-            {/* <WithAuthLayout checkAdmin={router.checkAdmin}> */}
-            <GeneralLayout>{router.element}</GeneralLayout>
-            {/* </WithAuthLayout> */}
+            <WithAuthLayout checkAdmin={router.checkAdmin}>
+              <GeneralLayout>{router.element}</GeneralLayout>
+            </WithAuthLayout>
           </MemoryPastUrlLayout>
         ),
       }
@@ -147,9 +147,9 @@ export const routers: RemixRouter = createBrowserRouter(
         path: router.path,
         element: (
           <MemoryPastUrlLayout>
-            {/* <WithoutAuthOnlyLayout> */}
-            <GeneralLayout>{router.element}</GeneralLayout>
-            {/* </WithoutAuthOnlyLayout> */}
+            <WithoutAuthOnlyLayout>
+              <GeneralLayout>{router.element}</GeneralLayout>
+            </WithoutAuthOnlyLayout>
           </MemoryPastUrlLayout>
         ),
       }

@@ -14,7 +14,7 @@ interface HeaderContentProps {
 const HeaderContent = ({ handleHeaderClose }: HeaderContentProps) => {
   const headerContentInfo = withoutAuthHeaderContent
 
-  console.log(headerContentInfo)
+  // console.log(headerContentInfo)
   //    헤더 컨텐츠에 따라 리스트 보여주기
   //    - 반응형 사이즈에 따라 Navbar에서 보여주거나 Modal을 통해서 보여줘야 한다.
   return (

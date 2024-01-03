@@ -7,13 +7,11 @@ export const AdminRole: ROLE_ADMIN = 'admin'
 export type UserRole = ROLE_ADMIN | ROLE_USER
 
 interface UserInfo {
-  email: string
   nickname: string
   profileImage?: string
   roles?: UserRole[]
 }
 export interface UserBasic {
-  id: number // pk
   email: string
   password?: string
 }

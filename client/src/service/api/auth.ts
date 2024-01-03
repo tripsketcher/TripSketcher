@@ -75,8 +75,10 @@ export const submitJoinInfoApi = async (args: JoinRequest): Promise<JoinResponse
 // # Login
 export const submitLoginInfoApi = async ({ email, password }: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await axios.post('API_ENDPOINT', { email, password })
-    return { accessToken: response.headers['authorization'] }
+    // const response = await axios.post('API_ENDPOINT', { email, password })
+    // return { accessToken: response.headers['authorization'] }
+    console.log('입력된 email, password : ', email, password)
+    return { accessToken: 'abc' }
   } catch (error) {
     return handleSubmitLoginInfoError(error)
   }
@@ -85,8 +87,9 @@ export const submitLoginInfoApi = async ({ email, password }: LoginRequest): Pro
 // # UserInfo
 export const getCurrentUserApi = async (accessToken: string): Promise<UserInfoResponse> => {
   try {
-    const apiRes = await axios.post(`${BASE_URL}/users/info`)
-    return apiRes.data
+    // const apiRes = await axios.post(`${BASE_URL}/users/info`)
+    // return apiRes.data
+    return { data: { email: 'triper1@trip.com', nickname: '따듯한아메리카노', profileImage: '' } }
   } catch (error) {
     return handleGetUserInfoError(error)
   }

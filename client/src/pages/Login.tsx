@@ -1,15 +1,14 @@
 import { useState } from 'react'
 
 import { useRouter } from 'hooks/useRouter'
-import usePreviousPageCheck from 'hooks/usePreviousPageCheck'
 
-import useUserStore from 'store/auth'
+import { useUserStore } from 'store/auth'
 
 import { submitLoginInfoApi } from 'service/api/auth'
+import { getRoutePathBeforeAuthPage } from 'service/storage/urlBeforeAuth'
 
 import styles from './Login.module.scss'
 import { ClosedPwIcon, OpenedPwIcon } from 'assets/svgs'
-import { DEFAULT_URL } from 'utils/const/api'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -17,7 +16,6 @@ const Login = () => {
   const [isPwHided, setIsPwHided] = useState<boolean>(true)
   const { setAccessToken } = useUserStore()
   const { routeTo } = useRouter()
-  const isFromService = usePreviousPageCheck()
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget
@@ -31,22 +29,21 @@ const Login = () => {
     setIsPwHided((pre) => !pre)
   }
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const LoginRes = await submitLoginInfoApi({ email, password })
     const newAccessToken = LoginRes.accessToken
+
     if (newAccessToken === null) {
+      console.log('로그인 실패')
       return
     }
 
     setAccessToken(newAccessToken)
-
-    const pageUrlBeforeLogin = new URL(document.referrer).pathname
-    const returnPageUrl = isFromService ? pageUrlBeforeLogin : DEFAULT_URL
-    routeTo(returnPageUrl)
+    routeTo(getRoutePathBeforeAuthPage(true))
   }
 
   return (
-    <div>
+    <form>
       <label>
         이메일
         <input type='email' value={email} onChange={handleEmailChange} />
@@ -68,9 +65,11 @@ const Login = () => {
           </button>
         )}
       </div>
-      <button onClick={handleLogin}>로그인</button>
+      <button type='button' onClick={handleLogin}>
+        로그인
+      </button>
       {/* 회원가입, 비밀번호 찾기 버튼 */}
-    </div>
+    </form>
   )
 }
 
