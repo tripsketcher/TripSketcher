@@ -19,6 +19,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ApiUsersService {
     private final RedisLockRepository redisLockRepository;
     private final TransactionHandler transactionHandler;
 
-    private final int MAX_EMAIL_REQUESTS = 3;
+    private final int MAX_EMAIL_REQUESTS = 10;
     private final int TIME_LIMIT_MINUTES = 3;
     private final int VERIFICATION_CODE_SIZE = 10;
     private final int NEW_PASSWORD_SIZE = 8;
@@ -56,16 +57,28 @@ public class ApiUsersService {
         }
     }
 
+    /*
+    email request maximum 10
+    email time count to individual 3 min
+     */
+    @Transactional
     public void sendVerificationEmail(EmailAuthenticationRequestDto requestDto){
         String email = requestDto.getEmail();
-        String key = "email_count";
-
         duplicateEmail(requestDto.getEmail());
+
+        // checking if count is over 10
+        String key = "email_verification_count:";
         int count = checkEmailRequestLimit(key, email);
 
+        // getting verification code
         String verificationCode = getAuthenticationCode(EMAIL_LIMIT_TIME_KEY, email, TIME_LIMIT_MINUTES);
         sendEmail(email, "Trip Sketcher Verification Code",
-                "This is your " + count + " request.\nYour verification code is: " + verificationCode);
+                "Dear User,\n\n" +
+                        "We are delighted to assist you with your request. This is your request number " + count + ".\n\n" +
+                        "Your verification code is: " + verificationCode + "\n\n" +
+                        "Thank you for choosing Trip Sketcher. Should you need any further assistance, please do not hesitate to contact us.\n\n" +
+                        "Best Regards,\n" +
+                        "The Trip Sketcher Team");
 
         updateRequestCount(key, email);
     }
@@ -248,9 +261,9 @@ public class ApiUsersService {
     private int checkEmailRequestLimit(String key, String email){
         String countKey = key + email;
         String countStr = redisTemplate.opsForValue().get(countKey);
-        int count = countStr != null ? Integer.parseInt(countStr) : 0;
+        int count = countStr != null ? Integer.parseInt(countStr) : 1;
 
-        if(count >= MAX_EMAIL_REQUESTS){
+        if(count > MAX_EMAIL_REQUESTS){
             throw new CustomException(ErrorType.EMAIL_REQUEST_LIMIT_EXCEEDED);
         }
 
@@ -261,7 +274,7 @@ public class ApiUsersService {
         String countKey = key + email;
         String countStr = redisTemplate.opsForValue().get(countKey);
         if(countStr == null){
-            redisTemplate.opsForValue().set(countKey, "1", getExpirationTime(email), TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(countKey, "1", 1, TimeUnit.DAYS);
         }else{
             redisTemplate.opsForValue().increment(countKey, 1);
         }
@@ -313,11 +326,8 @@ public class ApiUsersService {
 
     private String getAuthenticationCode(String key, String email, int time){
         String codeKey = key + email;
-        String codeVal = redisTemplate.opsForValue().get(codeKey);
-        if(codeVal == null){
-            codeVal = generateVerificationCode(VERIFICATION_CODE_SIZE);
-            redisTemplate.opsForValue().set(codeKey, codeVal, time, TimeUnit.MINUTES);
-        }
+        String codeVal = generateVerificationCode(VERIFICATION_CODE_SIZE);
+        redisTemplate.opsForValue().set(codeKey, codeVal, time, TimeUnit.MINUTES);
         return codeVal;
     }
 

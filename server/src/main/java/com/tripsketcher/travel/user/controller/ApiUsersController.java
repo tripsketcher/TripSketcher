@@ -18,9 +18,9 @@ public class ApiUsersController {
 
     private final ApiUsersService apiUsersService;
 
-    @GetMapping("/email/{user_email}")
-    public ApiResponseDto<Void> duplicateEmail(@PathVariable("user_email") String email){
-        apiUsersService.duplicateEmail(email);
+    @GetMapping("/email")
+    public ApiResponseDto<Void> duplicateEmail(@Valid @RequestBody EmailAuthenticationRequestDto requestDto){
+        apiUsersService.duplicateEmail(requestDto.getEmail());
         return ResponseUtils.ok(MsgType.NO_DUPLICATE_EMAIL);
     }
 
