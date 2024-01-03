@@ -13,6 +13,9 @@ import CourseList from './pages/CourseList'
 import Review from './pages/Review'
 import AdminPage from './pages/AdminPage'
 import NotFound from './pages/NotFound'
+import WithAuthLayout from 'component/layout/WithAuthLayout'
+import WithoutAuthOnlyLayout from 'component/layout/WithoutAuthOnlyLayout'
+import MemoryPastUrlLayout from 'component/layout/MemoryPastUrlLayout'
 
 // Router에 쓰이는 공통되는 타입
 interface RouterBase {
@@ -91,7 +94,7 @@ const routerData: RouterElement[] = [
     path: '/map/:type',
     label: 'Map',
     element: <Map />,
-    checkAuth: false,
+    checkAuth: true,
   },
   { id: 6, path: '/course-list', label: 'CourseList', element: <CourseList />, checkAuth: true },
   {
@@ -117,6 +120,7 @@ const routerData: RouterElement[] = [
   },
 ]
 
+// Note: Router Data
 // 어드민 전용 페이지이거나 auth가 필요한 페이지는 WithAuthLayout으로 감싸기
 export const routers: RemixRouter = createBrowserRouter(
   routerData.map((router) => {
@@ -126,7 +130,13 @@ export const routers: RemixRouter = createBrowserRouter(
 
       return {
         path: router.path,
-        element: <GeneralLayout>{router.element}</GeneralLayout>,
+        element: (
+          <MemoryPastUrlLayout>
+            {/* <WithAuthLayout checkAdmin={router.checkAdmin}> */}
+            <GeneralLayout>{router.element}</GeneralLayout>
+            {/* </WithAuthLayout> */}
+          </MemoryPastUrlLayout>
+        ),
       }
     }
 
@@ -135,19 +145,36 @@ export const routers: RemixRouter = createBrowserRouter(
     if (router.checkWithoutAuthOnly) {
       return {
         path: router.path,
-        element: <GeneralLayout>{router.element}</GeneralLayout>,
+        element: (
+          <MemoryPastUrlLayout>
+            {/* <WithoutAuthOnlyLayout> */}
+            <GeneralLayout>{router.element}</GeneralLayout>
+            {/* </WithoutAuthOnlyLayout> */}
+          </MemoryPastUrlLayout>
+        ),
       }
     }
 
     return {
       path: router.path,
-      element: <GeneralLayout>{router.element}</GeneralLayout>,
+      element: (
+        <MemoryPastUrlLayout>
+          <GeneralLayout>{router.element}</GeneralLayout>
+        </MemoryPastUrlLayout>
+      ),
     }
   })
 )
+// 이전 경로를 저장하면 안되는 경로들
+export const onlyWithoutAuthPathList = routerData
+  .filter((router) => router.checkWithoutAuthOnly)
+  .map((router) => router.path)
+
+// Note: Header Data
 // routerData에서 path와 element 속성 배열을 생성하여 createBrowserRouter로 Router 객체 생성
 // 어드민 전용 페이지는 checkAdmin = true를 전달, 아니면 false를 전달
 
+// HeaderNavbar에 표시되는 안되는 콘텐츠들
 const excludeHeaderList = ['Join', 'Login', 'UserInfo', 'NotFound', 'DefaultPage']
 
 // 인증 정보가 필요한 HeaderContent 필터링하기
