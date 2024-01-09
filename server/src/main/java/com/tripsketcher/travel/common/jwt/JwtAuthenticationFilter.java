@@ -9,26 +9,42 @@ import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final AntPathRequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
-
+    private static final String[] PERMIT_URL_ARRAY = {
+            /* api */
+            "/api/**"
+            /* swagger v3 -> authorization
+            "/v3/api-docs/**",
+            "/swagger-ui/**"
+            */
+    };
+    private final RequestMatcher permitMatcher;
 
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
+        List<RequestMatcher> matchers = Arrays.stream(PERMIT_URL_ARRAY)
+                .map(AntPathRequestMatcher::new)
+                .collect(Collectors.toList());
+        this.permitMatcher = new OrRequestMatcher(matchers);
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        if (apiMatcher.matches(request)) {
+        if (permitMatcher.matches(request)) {
             filterChain.doFilter(request, response);
             return;
         }
